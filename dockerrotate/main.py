@@ -139,8 +139,9 @@ def clean_images(client, args):
             print "Removing: {} - {}".format(image["Id"], ", ".join(image["RepoTags"]))
             if args.dry_run:
                 continue
-            # deleting an image with mutiple tags appears to only remove the first tag
-            # all tags must be removed in order to fully delete the image
+            # In some scenarios, deleting an image with mutiple tags only removes one tag at a time
+            # (and all tags must be removed in order to fully delete the image).
+            # More investigation needed.
             for tag in image["RepoTags"]:
                 try:
                     client.remove_image(image["Id"], force=True, noprune=False)
