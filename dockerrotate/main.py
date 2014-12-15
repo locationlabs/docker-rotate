@@ -112,19 +112,30 @@ def clean_images(client, args):
     # when all is true; these should be deleted along with dependent images
     images = client.images(all=False)
 
-    images_by_name = {}
+    # index by id
+    images_by_id = {
+        image["Id"]: image for image in images
+    }
 
+    # group by name
+    images_by_name = {}
     for image in images:
         for tag in image["RepoTags"]:
             image_name = normalize_tag_name(tag)
             if args.only and args.only != image_name:
                 continue
-            images_by_name.setdefault(image_name, []).append(image)
+            images_by_name.setdefault(image_name, set()).add(image["Id"])
 
-    # TODO: sort and keep some images by name
+    for image_name, image_ids in images_by_name.items():
+        # sort/keep
+        images = sorted([
+            images_by_id[image_id] for image_id in image_ids],
+            key=lambda image: -image["Created"],
+        )
+        images_to_delete = images[args.keep:]
 
-    for name, images in images_by_name.items():
-        for image in images:
+        # delete
+        for image in images_to_delete:
             print "Removing: {} - {}".format(image["Id"], ", ".join(image["RepoTags"]))
             if args.dry_run:
                 continue
