@@ -95,10 +95,14 @@ def clean_containers(client, args):
         image_name = normalize_tag_name(container["Image"])
         if args.only and args.only != image_name:
             continue
-        if client.inspect_container(container["Id"])["Volumes"]:
+        if client.inspect_container(container["Id"])["Config"]["Volumes"]:
             # could be a data volume container
             continue
-        print "Removing: {} - {}".format(container["Id"], container["Names"][0])
+        print "Removing container ID: {}, Name: {}, Image: {}".format(
+            container["Id"],
+            container["Names"][0],
+            image_name
+        )
         if args.dry_run:
             continue
         client.remove_container(container["Id"])
@@ -136,7 +140,10 @@ def clean_images(client, args):
 
         # delete
         for image in images_to_delete:
-            print "Removing: {} - {}".format(image["Id"], ", ".join(image["RepoTags"]))
+            print "Removing image ID: {}, Tags: {}".format(
+                image["Id"],
+                ", ".join(image["RepoTags"])
+            )
             if args.dry_run:
                 continue
             # In some scenarios, deleting an image with mutiple tags only removes one tag at a time
