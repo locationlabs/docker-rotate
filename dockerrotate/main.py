@@ -2,10 +2,15 @@
 Free up space by rotating out old Docker images.
 """
 from argparse import ArgumentParser
+from datetime import timedelta
 
+from dateutil import parser
 from docker import Client
 from docker.errors import APIError
 from docker.utils import kwargs_from_env
+
+
+TEN_SECONDS = timedelta(seconds=10)
 
 
 def parse_args():
@@ -75,6 +80,33 @@ def normalize_tag_name(tag):
     return "/".join(tag.rsplit(":", 1)[0].split("/")[-2:])
 
 
+def might_be_data_volume(client, container):
+    """
+    Data volumes are non-running containers that we do not want to delete.
+
+    Detecting a data volume doesn't apear to be an exact science, but we
+    can use some of the information from `docker inspect` to make a good
+    guess.
+    """
+    inspect_data = client.inspect_container(container["Id"])
+    if not inspect_data["Config"]["Volumes"]:
+        # data volumes should have volumes...
+        return False
+    if inspect_data["State"]["ExitCode"] != 0:
+        # data volumes need to have exited cleanly
+        return False
+    started_at = parser.parse(inspect_data["State"]["StartedAt"])
+    finished_at = parser.parse(inspect_data["State"]["FinishedAt"])
+    if finished_at < started_at:
+        # not actually finished
+        return False
+    if (finished_at - started_at) > TEN_SECONDS:
+        # data volumes should terminate quickly
+        return False
+    # probably a data volume
+    return True
+
+
 def clean_containers(client, args):
     """
     Delete non-running containers.
@@ -95,8 +127,8 @@ def clean_containers(client, args):
         image_name = normalize_tag_name(container["Image"])
         if args.only and args.only != image_name:
             continue
-        if client.inspect_container(container["Id"])["Config"]["Volumes"]:
-            # could be a data volume container
+        if might_be_data_volume(client, container):
+            print "Skipping data volume: {}".format(container["Names"][0])
             continue
         print "Removing container ID: {}, Name: {}, Image: {}".format(
             container["Id"],

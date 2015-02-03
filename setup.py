@@ -18,6 +18,7 @@ setup(name='docker-rotate',
       ],
       install_requires=[
           'docker-py>=0.5.3',
+          'python-dateutil>=2.4.0',
       ],
       tests_require=[
           'mock',
