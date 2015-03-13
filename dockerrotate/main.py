@@ -132,7 +132,7 @@ def clean_containers(client, args):
             continue
         print "Removing container ID: {}, Name: {}, Image: {}".format(
             container["Id"],
-            container["Names"][0],
+            container.get("Names", ["unnamed"])[0],
             image_name
         )
         if args.dry_run:
