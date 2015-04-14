@@ -128,9 +128,9 @@ def clean_containers(client, args):
         if args.only and args.only != image_name:
             continue
         if might_be_data_volume(client, container):
-            print "Skipping data volume: {}".format(container["Names"][0])
+            print "Skipping data volume: {}".format(container["Names"][0])  # noqa
             continue
-        print "Removing container ID: {}, Name: {}, Image: {}".format(
+        print "Removing container ID: {}, Name: {}, Image: {}".format(  # noqa
             container["Id"],
             container.get("Names", ["unnamed"])[0],
             image_name
@@ -172,7 +172,7 @@ def clean_images(client, args):
 
         # delete
         for image in images_to_delete:
-            print "Removing image ID: {}, Tags: {}".format(
+            print "Removing image ID: {}, Tags: {}".format(  # noqa
                 image["Id"],
                 ", ".join(image["RepoTags"])
             )
@@ -185,7 +185,7 @@ def clean_images(client, args):
                 try:
                     client.remove_image(image["Id"], force=True, noprune=False)
                 except APIError as error:
-                    print error.message
+                    print error.message  # noqa
 
 
 def main():

@@ -22,6 +22,7 @@ setup(name='docker-rotate',
       ],
       tests_require=[
           'mock',
+          'coverage',
       ],
       test_suite='dockerrotate.tests',
       entry_points={
