@@ -4,6 +4,8 @@ docker-rotate
 In a continuously deployed environment, old and unused docker images accumulate and use up space.
 `docker-rotate` helps remove the K oldest images of each type.
 
+[![Build Status](https://travis-ci.org/locationlabs/docker-rotate.png)](https://travis-ci.org/locationlabs/docker-rotate)
+
 Usage:
 
     # delete all but the three oldest images of each type
