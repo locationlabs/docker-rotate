@@ -21,8 +21,8 @@ setup(name='dockerrotate',
           'python-dateutil>=2.4.0',
       ],
       tests_require=[
-          'mock>=1.3.0',
-          'coverage>=3.7.1',
+          'mock',
+          'coverage',
       ],
       test_suite='dockerrotate.tests',
       entry_points={
