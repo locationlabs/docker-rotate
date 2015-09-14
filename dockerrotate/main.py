@@ -140,7 +140,7 @@ def clean_containers(client, args):
         try:
             client.remove_container(container["Id"])
         except APIError as error:
-            print "Unable to remove container: {}: {}".format(
+            print "Unable to remove container: {}: {}".format(  # noqa
                 container["Id"],
                 error,
             )
