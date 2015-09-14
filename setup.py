@@ -6,7 +6,7 @@ __version__ = '1.1'
 
 __build__ = ''
 
-setup(name='docker-rotate',
+setup(name='dockerrotate',
       version=__version__ + __build__,
       description='Docker image rotation tool',
       author='Location Labs',
@@ -14,15 +14,15 @@ setup(name='docker-rotate',
       url='http://locationlabs.com',
       packages=find_packages(exclude=['*.tests']),
       setup_requires=[
-          'nose>=1.0',
+          'nose>=1.3.7',
       ],
       install_requires=[
           'docker-py>=0.5.3',
           'python-dateutil>=2.4.0',
       ],
       tests_require=[
-          'mock',
-          'coverage',
+          'mock>=1.3.0',
+          'coverage>=3.7.1',
       ],
       test_suite='dockerrotate.tests',
       entry_points={
