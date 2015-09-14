@@ -132,12 +132,19 @@ def clean_containers(client, args):
             continue
         print "Removing container ID: {}, Name: {}, Image: {}".format(  # noqa
             container["Id"],
-            container.get("Names", ["unnamed"])[0],
+            (container.get("Names") or ["unnamed"])[0],
             image_name
         )
         if args.dry_run:
             continue
-        client.remove_container(container["Id"])
+        try:
+            client.remove_container(container["Id"])
+        except APIError as error:
+            print "Unable to remove container: {}: {}".format(
+                container["Id"],
+                error,
+            )
+            pass
 
 
 def clean_images(client, args):
