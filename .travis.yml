@@ -2,7 +2,7 @@ language: python
 python:
 - '2.7'
 sudo: false
-install: pip install . --use-mirrors
+install: pip install .
 script: python setup.py nosetests
 deploy:
   provider: pypi
