@@ -162,9 +162,9 @@ def clean_images(client, args):
 
     # we have already cleaned up the containers, so any images still referenced
     # by containers should be kept
-    required_images = set(
+    required_images = {
         container['Image'] for container in client.containers(all=True)
-    )
+    }
 
     # group by name
     images_by_name = {}
@@ -184,8 +184,10 @@ def clean_images(client, args):
 
         # If there is any intersection between an image's tags and our
         # required_images list, then we don't want to delete it
-        images_to_delete = [image for image in images[args.keep:]
-                            if not set(image["RepoTags"]) & required_images]
+        images_to_delete = [
+            image for image in images[args.keep:]
+            if not required_images.intersection(image["RepoTags"])
+        ]
 
         # delete
         for image in images_to_delete:
