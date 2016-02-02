@@ -17,7 +17,7 @@ setup(name='dockerrotate',
           'nose>=1.3.7',
       ],
       install_requires=[
-          'docker-py>=0.5.3',
+          'docker-py>=0.6.0',
           'python-dateutil>=2.4.0',
       ],
       tests_require=[
