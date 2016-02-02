@@ -7,6 +7,7 @@ from datetime import timedelta
 from dateutil import parser
 from docker import Client
 from docker.errors import APIError
+from docker.errors import NotFound
 from docker.utils import kwargs_from_env
 
 
@@ -50,6 +51,11 @@ def parse_args():
         action="store_true",
         help="Do not remove anything",
     )
+    parser.add_argument(
+        "--client-version",
+        default=None,
+        help="Specify client version to use.",
+    )
     return parser.parse_args()
 
 
@@ -62,9 +68,17 @@ def make_client(args):
     all the possible certificate options through argparse.
     """
     if args.use_env:
-        return Client(**kwargs_from_env(assert_hostname=False))
+        client = Client(version=args.client_version, **kwargs_from_env(assert_hostname=False))
     else:
-        return Client(base_url='unix://var/run/docker.sock')
+        client = Client(version=args.client_version, base_url='unix://var/run/docker.sock')
+
+    # Verify client can talk to server.
+    try:
+        client.version()
+    except NotFound as error:
+        raise SystemExit(error) # noqa
+
+    return client
 
 
 def normalize_tag_name(tag):
