@@ -171,11 +171,15 @@ def clean_images(client, args):
     # group by name
     images_by_name = {}
     for image in images:
+        if any(
+                any([re.match(pattern, tag) for pattern in args.keep_regex])
+                for tag in image["RepoTags"]
+        ):
+            continue
+
         for tag in image["RepoTags"]:
             image_name = normalize_tag_name(tag)
             if args.only and args.only != image_name:
-                continue
-            if any([re.match(pattern, tag) for pattern in args.keep_regex]):
                 continue
 
             images_by_name.setdefault(image_name, set()).add(image["Id"])
