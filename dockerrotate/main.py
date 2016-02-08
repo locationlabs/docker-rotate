@@ -3,6 +3,7 @@ Free up space by rotating out old Docker images.
 """
 from argparse import ArgumentParser
 from datetime import timedelta
+import re
 
 from dateutil import parser
 from docker import Client
@@ -39,6 +40,13 @@ def parse_args():
         type=int,
         default=3,
         help="Keep this many images of each kind",
+    )
+    parser.add_argument(
+        "--keep-regex",
+        type=str,
+        nargs='*',
+        default=list(),
+        help="Python regex of tag names to keep.",
     )
     parser.add_argument(
         "--only",
@@ -163,10 +171,17 @@ def clean_images(client, args):
     # group by name
     images_by_name = {}
     for image in images:
+        if any(
+                any([re.match(pattern, tag) for pattern in args.keep_regex])
+                for tag in image["RepoTags"]
+        ):
+            continue
+
         for tag in image["RepoTags"]:
             image_name = normalize_tag_name(tag)
             if args.only and args.only != image_name:
                 continue
+
             images_by_name.setdefault(image_name, set()).add(image["Id"])
 
     for image_name, image_ids in images_by_name.items():
