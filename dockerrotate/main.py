@@ -11,6 +11,8 @@ from docker.errors import NotFound
 from docker.utils import kwargs_from_env
 
 
+UNIX_SOC_ARGS = {"base_url": 'unix://var/run/docker.sock'}
+
 TEN_SECONDS = timedelta(seconds=10)
 
 
@@ -67,10 +69,12 @@ def make_client(args):
     variables (e.g. DOCKER_HOST). This is much simpler than trying to pass
     all the possible certificate options through argparse.
     """
-    if args.use_env:
-        client = Client(version=args.client_version, **kwargs_from_env(assert_hostname=False))
-    else:
-        client = Client(version=args.client_version, base_url='unix://var/run/docker.sock')
+    kwargs = kwargs_from_env(assert_hostname=False) if args.use_env else UNIX_SOC_ARGS
+
+    if args.client_version is not None:
+        kwargs["version"] = args.client_version
+
+    client = Client(**kwargs)
 
     # Verify client can talk to server.
     try:
