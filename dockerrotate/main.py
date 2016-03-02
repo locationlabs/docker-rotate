@@ -48,7 +48,7 @@ def parse_args():
     images_parser.add_argument(
         "--images",
         nargs='*',
-        help="Python regex of image names to remove",
+        help="Python regex of image names to remove. Use a '~' prefix for negative match.",
     )
 
     containers_parser = subparsers.add_parser(
