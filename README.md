@@ -8,7 +8,7 @@ In a continuously deployed environment, old and unused docker images and contain
 
 Usage:
 
-    # delete all but the three oldest images of each type
+    # delete all but the three most recent images of each type
     docker-rotate images --keep 3
 
     # only target one type of image but don't remove latest
