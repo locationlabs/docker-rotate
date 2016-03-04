@@ -55,3 +55,4 @@ target/
 
 cover
 .eggs
+.venv*
