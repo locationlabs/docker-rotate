@@ -6,9 +6,9 @@ install: pip install .
 script: python setup.py nosetests
 deploy:
   provider: pypi
-  user: jessemyers
+  user: jporten
   password:
-    secure: f7wqGCuSP6dJZ7GwdpQwMc9J0GU8oCK8tydUnvgLNass0U57Eg+PaQURPWxg0T1f5nYACzfche3YHTFeXtk1x7HV6WYWYddin/gv94m7u9+ZQpsrygGizv7eO3lU/vR3K86GrLdTR3z7ii50XDlM0W8XyqHDX1+GGHPWFGLxOHo=
+    secure: "hUYvqu5sGjwVZ7MxFdYxXK4YGMx+tYTPDrKPMk/tjLNvrC37sctDHff4LeN19B0Rwx83yRYiiFm61ID/jqSC0v2L3suYrbUCvWiYfpzs8VAT0DY7ShrsCum4Zqc3xlJq454Bb3RrXvE3fZx6B5FI0tWYWUJPIEB9xt/aE4+wjVk="
   on:
     tags: true
     repo: locationlabs/docker-rotate
