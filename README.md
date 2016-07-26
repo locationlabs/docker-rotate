@@ -11,10 +11,10 @@ Usage:
     # delete all but the three most recent images of each type
     docker-rotate images --keep 3
 
-    # only target one type of image but don't remove latest
-    docker-rotate images --keep 3 --image "organization/image" "~:latest"
+    # only target one type of image and don't remove latest
+    docker-rotate images --keep 3 --images "organization/image" "~:latest"
 
-    # don't actualy delete anything
+    # don't actually delete anything
     docker-rotate --dry-run images --keep 3
 
     # delete containers exited more than an hour ago
@@ -22,3 +22,4 @@ Usage:
 
 By default, `docker-rotate` connects to the local Unix socket; the usual environment variables will
 be respected if the `--use-env` flag is given.
+

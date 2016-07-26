@@ -13,7 +13,7 @@ from dockerrotate.containers import clean_containers
 UNIX_SOC_ARGS = {"base_url": "unix://var/run/docker.sock"}
 
 
-def parse_args():
+def parse_args(arg_values=None):
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "-e", "--use-env",
@@ -48,7 +48,7 @@ def parse_args():
     images_parser.add_argument(
         "--images",
         nargs='*',
-        help="Python regex of image names to remove. Use a '~' prefix for negative match.",
+        help="Python regexes of image names to remove. Use a '~' prefix for negative match.",
     )
 
     containers_parser = subparsers.add_parser(
@@ -65,7 +65,7 @@ def parse_args():
     containers_parser.add_argument(
         "--created",
         default="1d",
-        help="Remove only containers that where created (but not running) that long ago",
+        help="Remove only containers that were created (but not running) that long ago",
     )
     containers_parser.add_argument(
         "--images",
@@ -73,7 +73,7 @@ def parse_args():
         help="Python regex of image names to remove. Use a '~' prefix for negative match.",
     )
 
-    return parser.parse_args()
+    return parser.parse_args(arg_values)
 
 
 def make_client(args):
@@ -100,11 +100,12 @@ def make_client(args):
     return client
 
 
-def main():
+def main(arg_values=None):
     """
     CLI entry point.
+    Allow arg values to be passed in for testing reasons.
     """
-    args = parse_args()
+    args = parse_args(arg_values)
     args.client = make_client(args)
 
     args.cmd(args)
