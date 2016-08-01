@@ -11,6 +11,12 @@ nodes = [
     :ram => 128,
     :cpus => 1,
     :docker_version => '1.11.2'},
+  { :hostname => 'vagrant-test-docker112',
+    :ip => '172.16.218.5',
+    :box => 'bento/ubuntu-14.04',
+    :ram => 128,
+    :cpus => 1,
+    :docker_version => '1.12.0'},
 ]
 Vagrant.require_version ">= 1.6"
 Vagrant.configure("2") do |config|
