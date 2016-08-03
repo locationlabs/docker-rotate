@@ -32,6 +32,10 @@ This library provides a single command-line tool `docker-rotate` that supports t
  - `docker-rotate untagged-images` - clean up untagged images
  - `docker-rotate containers` - clean up containers
 
+`docker-rotate` respects the usual DOCKER_* environment variables when connecting to the Docker
+engine. For documentation on those, see:
+https://docs.docker.com/engine/reference/commandline/cli/#/environment-variables
+
 ### docker-rotate images
 `docker-rotate images` operates on only tagged images. For each image, it determines an image name
 based on the tag, and considers images with the same name together. (For example, images with tags
@@ -60,9 +64,16 @@ Usage examples:
 `docker-rotate untagged-images` simply removes all images without tags, except images that are in
 use by containers. (Again, that means it's a good idea to clean up containers first.)
 
+Usage examples:
+
+    # clean up untagged images
+    docker-rotate untagged-images
+
 ### docker-rotate containers
 `docker-rotate containers` cleans up containers according to the arguments you specify. (For
 containers with volumes, those volumes will not be removed.)
+
+Usage examples:
 
     # clean up all "exited" containers that stopped at least one hour ago
     docker-rotate container --exited 1h
@@ -75,7 +86,4 @@ containers with volumes, those volumes will not be removed.)
 
     # clean up containers in multiple states at once
     docker-rotate container --exited 1h --created 7d --dead 0
-
-`docker-rotate` respects the usual DOCKER_* environment variables when connecting to the Docker
-engine.
 
