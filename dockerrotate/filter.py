@@ -1,22 +1,26 @@
+"""
+Contains functions used in implementing image name filtering.
+"""
 import re
 
 
-def include_image(image_tags, args):
+def regex_positive_match(pattern, value):
     """
-    Return truthy if image should be considered for removal.
-    """
-    if not args.images:
-        return True
-
-    return all(regex_match(pattern, tag)
-               for pattern in args.images
-               for tag in image_tags)
-
-
-def regex_match(pattern, tag):
-    """
-    Perform a regex match on the tag.
+    Return False if the regex is "positive" and is NOT a complete match for
+    the supplied value, True otherwise.
     """
     if pattern[0] == '~':
-        return not re.search(pattern[1:], tag)
-    return re.search(pattern, tag)
+        # this is a negative regex, ignore
+        return True
+    return re.match(pattern + '\Z', value)
+
+
+def regex_negative_match(pattern, value):
+    """
+    Return False if the regex is "negative" and is a complete match for the
+    supplied value, True otherwise.
+    """
+    if pattern[0] != '~':
+        # this is a positive regex, ignore
+        return True
+    return not re.match(pattern[1:] + '\Z', value)

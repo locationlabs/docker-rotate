@@ -1,25 +1,42 @@
 """
 Free up space by rotating out old Docker images and containers.
 """
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError
+from datetime import datetime, timedelta
+import re
 
+from dateutil.tz import tzutc
 from docker import Client
 from docker.errors import NotFound
 from docker.utils import kwargs_from_env
 
-from dockerrotate.images import clean_images
 from dockerrotate.containers import clean_containers
+from dockerrotate.images import clean_images
+from dockerrotate.untagged import clean_untagged
+
 
 UNIX_SOC_ARGS = {"base_url": "unix://var/run/docker.sock"}
 
+TIME_REGEX = re.compile(r'((?P<days>\d+?)d)?((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')  # noqa
 
-def parse_args():
+
+def time_delta_type(time_str):
+    """
+    Parse a human readable time delta string into a timedelta object
+    """
+    parts = TIME_REGEX.match(time_str)
+    if not parts:
+        raise ArgumentTypeError("Invalid time delta format '{}'".format(time_str))
+    parts = parts.groupdict()
+    time_params = {}
+    for (name, param) in parts.iteritems():
+        if param:
+            time_params[name] = int(param)
+    return timedelta(**time_params)
+
+
+def argument_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        "-e", "--use-env",
-        action="store_true",
-        help="Load docker connection information from standard environment variables.",
-    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -30,50 +47,77 @@ def parse_args():
         help="Specify client version to use.",
     )
 
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(title="Subcommands")
 
     images_parser = subparsers.add_parser(
         "images",
-        help="Clean out old images",
+        help="Clean up old tagged images",
         formatter_class=ArgumentDefaultsHelpFormatter,
+        epilog="Multiple \"--name\" and \"--tag\" arguments can be provided. Only images that "
+               "match ALL of the supplied expressions will be considered for cleanup."
     )
-    images_parser.set_defaults(cmd=clean_images)
+    images_parser.set_defaults(func=clean_images)
     images_parser.add_argument(
         "--keep",
         "-k",
         type=int,
-        default=3,
-        help="Keep this many images of each kind",
+        required=True,
+        help="For each image name, keep this many images",
+    )
+
+    images_parser.add_argument(
+        "--name",
+        action="append",
+        default=[],
+        help="Limit cleanup to images whose name fully matches this (python) regular expression. "
+             "Use a '~' prefix to invert matching.",
     )
     images_parser.add_argument(
-        "--images",
-        nargs='*',
-        help="Python regex of image names to remove. Use a '~' prefix for negative match.",
+        "--tag",
+        action="append",
+        default=[],
+        help="Limit cleanup to images whose tag fully matches this (python) regular expression. "
+             "Use a '~' prefix to invert matching.",
     )
+
+    untagged_parser = subparsers.add_parser(
+        "untagged-images",
+        help="Clean out old untagged images",
+        formatter_class=ArgumentDefaultsHelpFormatter,
+    )
+    untagged_parser.set_defaults(func=clean_untagged)
 
     containers_parser = subparsers.add_parser(
         "containers",
         help="Clean out old containers",
         formatter_class=ArgumentDefaultsHelpFormatter,
+        epilog="The \"exited\", \"created\", and \"dead\" arguments all "
     )
-    containers_parser.set_defaults(cmd=clean_containers)
+    containers_parser.set_defaults(func=clean_containers)
     containers_parser.add_argument(
         "--exited",
-        default="1h",
-        help="Remove only containers that exited that long ago",
+        type=time_delta_type,
+        help="Remove \"exited\" containers that finished at least this long ago",
     )
     containers_parser.add_argument(
         "--created",
-        default="1d",
-        help="Remove only containers that where created (but not running) that long ago",
+        type=time_delta_type,
+        help="Remove \"created\" containers that were created at least this long ago",
     )
     containers_parser.add_argument(
-        "--images",
-        nargs='*',
-        help="Python regex of image names to remove. Use a '~' prefix for negative match.",
+        "--dead",
+        type=time_delta_type,
+        help="Remove \"dead\" containers that finished at least this long ago",
     )
 
-    return parser.parse_args()
+    return parser
+
+
+def parse_arguments(arg_values):
+    parser = argument_parser()
+    args = parser.parse_args(arg_values)
+    args.now = datetime.now(tzutc())
+    return args
 
 
 def make_client(args):
@@ -84,7 +128,7 @@ def make_client(args):
     variables (e.g. DOCKER_HOST). This is much simpler than trying to pass
     all the possible certificate options through argparse.
     """
-    kwargs = kwargs_from_env(assert_hostname=False) if args.use_env else UNIX_SOC_ARGS
+    kwargs = kwargs_from_env(assert_hostname=False)
 
     if args.client_version:
         kwargs["version"] = args.client_version
@@ -100,11 +144,13 @@ def make_client(args):
     return client
 
 
-def main():
+def main(arg_values=None):
     """
     CLI entry point.
+    Allow arg values to be passed in for testing reasons.
     """
-    args = parse_args()
+    args = parse_arguments(arg_values)
+
     args.client = make_client(args)
 
-    args.cmd(args)
+    args.func(args)

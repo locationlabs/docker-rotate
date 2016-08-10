@@ -56,3 +56,6 @@ target/
 cover
 .eggs
 .venv*
+
+# Vagrant, if you were running integration tests
+.vagrant

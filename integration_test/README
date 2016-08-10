@@ -1,0 +1,11 @@
+This file contains integration tests for Docker containers. These integration tests need a Docker
+instance to run against, and they will use your local container. While the tests do attempt to
+clean up after themselves, that does mean:
+
+ - if you don't have a docker instance available, nothing will work.
+ - if everything is working correctly, running the tests will "clean up" your local Docker instance,
+   equivalent to running "docker-rotate images --keep 5".
+ - if things are NOT working correctly, this could remove any number of images or containers from
+   your local docker instance.
+
+Ideally, therefore, you'll want to run them in some kind of protected environment, like Vagrant.
