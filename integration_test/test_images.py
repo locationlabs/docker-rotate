@@ -2,7 +2,7 @@ import time
 import pytest
 
 from dockerrotate.main import main
-from imagetools import BASE_IMAGE, assert_images
+from imagetools import assert_images, ImageFactory
 
 
 def test_no_images_removed(docker_client, image_factory):
@@ -116,5 +116,56 @@ def test_skip_removing_in_use(docker_client, container_factory):
 
     # original should still be there, and most recent, but middle image should be gone.
     assert_images(docker_client, id1, id3)
+
+
+def test_remove_matching_image(docker_client, image_factory):
+
+    assert_images(docker_client)
+    tag = 'image_1'
+    id1 = image_factory.add(tag)
+
+    try:
+        other_image_factory = ImageFactory(
+            docker_client,
+            name=OTHER_TEST_IMAGE_NAME,
+            base_image="{}:{}".format(image_factory.name, tag))
+
+        id2 = other_image_factory.add('image_2')
+
+        assert_images(docker_client, id1, id2)
+
+        main(['images', '--keep', '0', '--name', image_factory.name])
+
+        assert_images(docker_client, id2)
+
+    finally:
+        other_image_factory.cleanup()
+
+
+def test_remove_matching_image_extra_tag(docker_client, image_factory):
+
+    assert_images(docker_client)
+    tag = 'image_1'
+    extra_tag = 'also_image_1'
+    id1 = image_factory.add(tag, extra_tag)
+
+    try:
+        other_image_factory = ImageFactory(
+            docker_client,
+            name=OTHER_TEST_IMAGE_NAME,
+            base_image="{}:{}".format(image_factory.name, tag))
+
+        id2 = other_image_factory.add('image_2')
+
+        assert_images(docker_client, id1, id2)
+
+        main(['images', '--keep', '0', '--name', image_factory.name])
+
+        assert_images(docker_client, id2)
+
+    finally:
+        other_image_factory.cleanup()
+
+
 
 
