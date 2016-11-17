@@ -112,8 +112,19 @@ def clean_images(args):
             continue
 
         try:
+            # The simplest way to do this would be to delete by ID. However, then we
+            # encounter issues in the case where we have an image A that is tagged for
+            # removal, but that image is a parent image for image B. The desired behavior
+            # in that case is that all tags are removed for that image, but the image
+            # itself remains until B is removed.
+            #
             # force=true is required here because the image we remove might be "latest".
-            args.client.remove_image(image["Id"], force=True, noprune=False)
+
+            for repo_tag in image["RepoTags"]:
+                args.client.remove_image(repo_tag, force=True, noprune=False)
+            else:
+                # If the image has no tags (unexpected), fall back to ID.
+                args.client.remove_image(image["Id"], force=True, noprune=False)
         except APIError as error:
             print "unexpected: API error while trying to delete image. Error message is:"
             print error.message

@@ -1,3 +1,7 @@
+Version 3.1:
+ - Changed image deletion to use tags, not Ids. This fixes an issue when deleting an image
+   that is a parent of another image.
+
 Version 3.0:
  - reworked API, again - this version is a lot clearer and more explicit about what it does
  - fixed issues around images with multiple names

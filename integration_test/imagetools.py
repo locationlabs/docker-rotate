@@ -36,10 +36,11 @@ def assert_images(docker_client, *image_ids):
 
 
 class ImageFactory:
-    def __init__(self, docker_client, name=DEFAULT_TEST_IMAGE_NAME):
+    def __init__(self, docker_client, name=DEFAULT_TEST_IMAGE_NAME, base_image=BASE_IMAGE):
         self.docker_client = docker_client
         self.counter = 1
         self.name = name
+        self.base_image = base_image
         self.image_ids = []
 
     def add(self, tag, *other_tags):
@@ -64,7 +65,7 @@ class ImageFactory:
             RUN echo "Test image {name}:{counter}" > /content.txt
 
             CMD sleep 999
-            """.format(base_image=BASE_IMAGE, name=name, counter=self.counter))
+            """.format(base_image=self.base_image, name=name, counter=self.counter))
         dockerfile_bytes = io.BytesIO(dockerfile.encode('utf-8'))
 
         self.counter += 1
