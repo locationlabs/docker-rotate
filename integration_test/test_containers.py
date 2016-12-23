@@ -1,6 +1,3 @@
-from dockerrotate.main import main
-
-
 def _totals(docker_client):
     return (len(docker_client.containers()), len(docker_client.containers(all=True)))
 
@@ -20,7 +17,8 @@ def _assert_running(docker_client, *ids):
     existing_container_ids = set(container["Id"] for container in docker_client.containers())
     assert existing_container_ids == set(ids)
 
-def test_remove_created_containers(docker_client, container_factory):
+
+def test_remove_created_containers(docker_client, container_factory, docker_rotate):
 
     _assert_no_containers(docker_client)
 
@@ -37,7 +35,7 @@ def test_remove_created_containers(docker_client, container_factory):
     _assert_running(docker_client, r1)
 
 
-def test_remove_stopped_containers(docker_client, container_factory):
+def test_remove_stopped_containers(docker_client, container_factory, docker_rotate):
 
     _assert_no_containers(docker_client)
 
@@ -54,7 +52,7 @@ def test_remove_stopped_containers(docker_client, container_factory):
     _assert_running(docker_client, r1)
 
 
-def test_remove_non_running_containers(docker_client, container_factory):
+def test_remove_non_running_containers(docker_client, container_factory, docker_rotate):
 
     _assert_no_containers(docker_client)
 
@@ -67,13 +65,13 @@ def test_remove_non_running_containers(docker_client, container_factory):
     _assert_existing(docker_client, c1, r1, r2, s1, s2, s3)
     _assert_running(docker_client, r1, r2)
 
-    main(['containers', '--created', '0h', '--exited', '0h'])
+    docker_rotate(['containers', '--created', '0h', '--exited', '0h'])
 
     _assert_existing(docker_client, r1, r2)
     _assert_running(docker_client, r1, r2)
 
 
-def test_dry_run(docker_client, container_factory):
+def test_dry_run(docker_client, container_factory, docker_rotate):
 
     _assert_no_containers(docker_client)
 
@@ -83,13 +81,13 @@ def test_dry_run(docker_client, container_factory):
     _assert_existing(docker_client, c1, r1, s1)
     _assert_running(docker_client, r1)
 
-    main(['--dry-run', 'containers', '--created', '0h', '--exited', '0h'])
+    docker_rotate(['--dry-run', 'containers', '--created', '0h', '--exited', '0h'])
 
     _assert_existing(docker_client, c1, r1, s1)
     _assert_running(docker_client, r1)
 
 
-def test_time_exclusion(docker_client, container_factory):
+def test_time_exclusion(docker_client, container_factory, docker_rotate):
 
     _assert_no_containers(docker_client)
 
@@ -99,7 +97,7 @@ def test_time_exclusion(docker_client, container_factory):
     _assert_existing(docker_client, c1, r1, s1)
     _assert_running(docker_client, r1)
 
-    main(['containers', '--created', '5m', '--exited', '5m'])
+    docker_rotate(['containers', '--created', '5m', '--exited', '5m'])
 
     _assert_existing(docker_client, c1, r1, s1)
     _assert_running(docker_client, r1)
@@ -108,7 +106,7 @@ def test_time_exclusion(docker_client, container_factory):
 # Name and tag matching for containers was dropped as part of the 3.0 release.
 # If we add it back at some point, here are integration tests for it.
 #
-# def test_name_matching(docker_client, container_factory):
+# def test_name_matching(docker_client, container_factory, docker_rotate):
 #
 #     CONTAINER_TEST_IMAGE_MATCH_NAME = 'locationlabs/zzzdockertestimage_for_container_matching'
 #
@@ -133,7 +131,7 @@ def test_time_exclusion(docker_client, container_factory):
 #     _assert_running(docker_client, r1, nr1)
 #
 #
-# def test_inverse_name_matching(docker_client, container_factory):
+# def test_inverse_name_matching(docker_client, container_factory, docker_rotate):
 #
 #     CONTAINER_TEST_IMAGE_MATCH_NAME = 'locationlabs/zzzdockertestimage_for_container_matching'
 #
@@ -157,7 +155,7 @@ def test_time_exclusion(docker_client, container_factory):
 #     _assert_running(docker_client, r1, nr1)
 #
 #
-# def test_label_matching(docker_client, container_factory):
+# def test_label_matching(docker_client, container_factory, docker_rotate):
 #
 #     LABEL = 'other_label'
 #
