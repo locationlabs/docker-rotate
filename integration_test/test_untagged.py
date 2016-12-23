@@ -28,7 +28,7 @@ def test_image_in_use(docker_client, container_factory):
     id1 = container_factory.image_id
 
     # create a container that uses that image
-    cid1 = container_factory.make_created()
+    container_factory.make_created()
 
     # create a new image with the same factory and the same tags, to make the old image untagged
     id2 = container_factory.image_factory.add(container_factory.IMAGE_TAG, "latest")
@@ -44,8 +44,3 @@ def test_image_in_use(docker_client, container_factory):
 
     # verify that the untagged image was not removed
     assert_images(docker_client, id1, id2)
-
-
-
-
-

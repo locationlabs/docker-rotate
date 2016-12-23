@@ -4,7 +4,6 @@ import textwrap
 import time
 
 from docker.errors import NotFound
-import pytest
 
 
 DEFAULT_TEST_IMAGE_NAME = 'locationlabs/zzzdockertestimage'
@@ -13,7 +12,7 @@ BASE_IMAGE = "alpine:3.4"
 
 def _normalize_image_id(image_id):
     """
-    The image IDs we get back from parsing "docker build output are abbreviated, 12 hex digits long.
+    The image IDs we get back from parsing "docker build" output are abbreviated to 12 hex digits.
     In order to compare them to the ids we get from "docker.Client.images()" calls, we need to
     normalize them
     """
@@ -100,6 +99,3 @@ class ImageFactory:
             except NotFound:
                 pass
         return cleaned
-
-
-

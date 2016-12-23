@@ -1,18 +1,20 @@
-import pytest
-
 from dockerrotate.main import main
 
 
 def _totals(docker_client):
     return (len(docker_client.containers()), len(docker_client.containers(all=True)))
 
+
 def _assert_no_containers(docker_client):
     # common precondition: no existing containers
     assert docker_client.containers(all=True) == []
 
+
 def _assert_existing(docker_client, *ids):
-    existing_container_ids = set(container["Id"] for container in docker_client.containers(all=True))
+    existing_container_ids = set(container["Id"] for container
+                                 in docker_client.containers(all=True))
     assert existing_container_ids == set(ids)
+
 
 def _assert_running(docker_client, *ids):
     existing_container_ids = set(container["Id"] for container in docker_client.containers())
@@ -23,13 +25,13 @@ def test_remove_created_containers(docker_client, container_factory):
     _assert_no_containers(docker_client)
 
     c1 = container_factory.make_created()
-    c2 =container_factory.make_created()
+    c2 = container_factory.make_created()
     r1 = container_factory.make_running()
     s1 = container_factory.make_stopped()
     _assert_existing(docker_client, c1, c2, r1, s1)
     _assert_running(docker_client, r1)
 
-    main(['containers', '--created', '0h',])
+    docker_rotate(['containers', '--created', '0h'])
 
     _assert_existing(docker_client, r1, s1)
     _assert_running(docker_client, r1)
@@ -39,14 +41,14 @@ def test_remove_stopped_containers(docker_client, container_factory):
 
     _assert_no_containers(docker_client)
 
-    c1 =container_factory.make_created()
+    c1 = container_factory.make_created()
     r1 = container_factory.make_running()
     s1 = container_factory.make_stopped()
     s2 = container_factory.make_stopped()
     _assert_existing(docker_client, c1, r1, s1, s2)
     _assert_running(docker_client, r1)
 
-    main(['containers', '--exited', '0h',])
+    docker_rotate(['containers', '--exited', '0h'])
 
     _assert_existing(docker_client, c1, r1)
     _assert_running(docker_client, r1)
@@ -124,7 +126,8 @@ def test_time_exclusion(docker_client, container_factory):
 #     _assert_existing(docker_client, c1, r1, s1, nc1, nr1, ns1)
 #     _assert_running(docker_client, r1, nr1)
 #
-#     main(['containers', '--created', '0m', '--exited', '0m', '--name', CONTAINER_TEST_IMAGE_MATCH_NAME])
+#     docker_rotate(['containers', '--created', '0m', '--exited', '0m', '--name',
+#                    CONTAINER_TEST_IMAGE_MATCH_NAME])
 #
 #     _assert_existing(docker_client, c1, r1, s1, nr1)
 #     _assert_running(docker_client, r1, nr1)
@@ -147,7 +150,8 @@ def test_time_exclusion(docker_client, container_factory):
 #     _assert_existing(docker_client, c1, r1, s1, nc1, nr1, ns1)
 #     _assert_running(docker_client, r1, nr1)
 #
-#     main(['containers', '--created', '0m', '--exited', '0m', '--name', "~" + CONTAINER_TEST_IMAGE_MATCH_NAME])
+#     docker_rotate(['containers', '--created', '0m', '--exited', '0m', '--name',
+#                    "~" + CONTAINER_TEST_IMAGE_MATCH_NAME])
 #
 #     _assert_existing(docker_client, r1, nc1, nr1, ns1)
 #     _assert_running(docker_client, r1, nr1)
@@ -174,8 +178,8 @@ def test_time_exclusion(docker_client, container_factory):
 #     _assert_running(docker_client, r1, lr1)
 #
 #     # clean up containers that are not using the latest image
-#     main(['containers', '--created', '0m', '--exited', '0m', '--images', "~:other_label"])
+#     docker_rotate(['containers', '--created', '0m', '--exited', '0m',
+#                    '--images', "~:other_label"])
 #
 #     _assert_existing(docker_client, r1, lc1, lr1, ls1)
 #     _assert_running(docker_client, r1, lr1)
-

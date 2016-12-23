@@ -1,6 +1,3 @@
-import time
-import pytest
-
 from dockerrotate.main import main
 from imagetools import assert_images, ImageFactory
 
@@ -56,7 +53,8 @@ def test_remove_only_matching(docker_client, image_factory):
     # dump images
     print "dumping all images before delete"
     for image in docker_client.images():
-        print " - id {}, tag0 {}, created {}".format(image["Id"], image["RepoTags"][0], image["Created"])
+        print " - id {}, tag0 {}, created {}".format(
+            image["Id"], image["RepoTags"][0], image["Created"])
 
     main(['images', '--keep', '2', '--name', OTHER_TEST_IMAGE_NAME])
 
@@ -75,7 +73,8 @@ def test_skip_removing_old_latest(docker_client, image_factory):
     # dump images
     print "dumping all images before delete"
     for image in docker_client.images():
-        print " - id {}, tag0 {}, created {}".format(image["Id"], image["RepoTags"][0], image["Created"])
+        print " - id {}, tag0 {}, created {}".format(
+            image["Id"], image["RepoTags"][0], image["Created"])
 
     # clean up images, but leave latest
     main(['images', '--keep', '2', '--name', image_factory.name, '--tag', '~latest'])
@@ -105,10 +104,10 @@ def test_skip_removing_in_use(docker_client, container_factory):
     id1 = container_factory.image_id
 
     # create a container that uses that image
-    cid1 = container_factory.make_created()
+    container_factory.make_created()
 
     # create a couple of new images with the same factory
-    id2 = container_factory.image_factory.add("another_image", "latest")
+    container_factory.image_factory.add("another_image", "latest")
     id3 = container_factory.image_factory.add("yet_another_image", "latest")
 
     # clean up images
@@ -165,7 +164,3 @@ def test_remove_matching_image_extra_tag(docker_client, image_factory):
 
     finally:
         other_image_factory.cleanup()
-
-
-
-
