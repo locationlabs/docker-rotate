@@ -3,11 +3,48 @@ from dateutil import parser
 from docker.errors import APIError
 
 
+def all_containers(args):
+    """
+    Return data for all containers.
+
+    Includes backward-compatibility for the ImageID field.
+    """
+    containers = args.client.containers(all=True)
+
+    if containers and "ImageID" not in containers[0]:
+        # pre-1.21 API: retrieve image IDs
+        for container in containers:
+            container["ImageID"] = args.client.inspect_container(container["Id"])["Image"]
+
+    return containers
+
+
+def inspect_container(container, args):
+    """
+    Return inspection data for the given container.
+
+    Includes backward-compatibility for the State.Status field.
+    """
+
+    inspect_data = args.client.inspect_container(container["Id"])
+    if "Status" not in inspect_data["State"]:
+        # pre-1.21 API: synthesize Status from other State fields
+        inspect_data["State"]["Status"] = (
+            "restarting" if inspect_data["State"]["Restarting"] else
+            "running" if inspect_data["State"]["Running"] else
+            "paused" if inspect_data["State"]["Paused"] else
+            "dead" if inspect_data["State"].get("Dead", False) else
+            "exited" if not inspect_data["State"]["Pid"] else
+            "created"
+        )
+    return inspect_data
+
+
 def include_container(container, args):
     """
     Return truthy if container should be removed.
     """
-    inspect_data = args.client.inspect_container(container["Id"])
+    inspect_data = inspect_container(container, args)
     status = inspect_data["State"]["Status"]
 
     # Note that while a timedelta of zero is a valid value for the created/exited/dead fields,
@@ -32,7 +69,7 @@ def include_container(container, args):
 
 def determine_containers_to_remove(args):
     return [
-        container for container in args.client.containers(all=True)
+        container for container in all_containers(args)
         if include_container(container, args)
     ]
 
