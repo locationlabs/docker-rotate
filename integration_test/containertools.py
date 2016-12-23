@@ -39,8 +39,7 @@ class ContainerFactory:
         started = False
         for counter in range(100):
             info = self.docker_client.inspect_container(container_id)
-            state = info["State"]["Status"]
-            if state == "running":
+            if info["State"]["Running"]:
                 started = True
                 break
             time.sleep(0.2)
