@@ -34,7 +34,8 @@ def inspect_container(container, args):
             "running" if inspect_data["State"]["Running"] else
             "paused" if inspect_data["State"]["Paused"] else
             "dead" if inspect_data["State"].get("Dead", False) else
-            "exited" if not inspect_data["State"]["Pid"] else
+            "exited" if (not inspect_data["State"]["Pid"]
+                         and inspect_data["State"]["StartedAt"] >= inspect_data["Created"]) else
             "created"
         )
     return inspect_data
