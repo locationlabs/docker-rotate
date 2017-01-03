@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-__version__ = '3.1'
+__version__ = '3.2'
 
 __build__ = ''
 

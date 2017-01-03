@@ -1,3 +1,6 @@
+Version 3.2:
+ - Added compatibility for pre-1.21 API for use with a pre-1.9 engine.
+
 Version 3.1:
  - Changed image deletion to use tags, not Ids. This fixes an issue when deleting an image
    that is a parent of another image.
