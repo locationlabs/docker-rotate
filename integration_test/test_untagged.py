@@ -1,34 +1,34 @@
-from dockerrotate.main import main
 from imagetools import assert_images
 
-def test_untagged_null_case(docker_client):
+
+def test_untagged_null_case(docker_client, docker_rotate):
     # verify we have no images to start with
     assert_images(docker_client)
 
     # Run main and verify it doesn't fail
-    main(['untagged-images'])
+    docker_rotate(['untagged-images'])
 
 
-def test_untagged(docker_client, image_factory):
+def test_untagged(docker_client, image_factory, docker_rotate):
     # add an image, then a second image with the same tag
     # the first image will remain, but untagged.
     id1 = image_factory.add('some_tag')
     id2 = image_factory.add('some_tag')
     assert_images(docker_client, id1, id2)
 
-    main(['untagged-images'])
+    docker_rotate(['untagged-images'])
 
     # verify that the untagged image was removed
     assert_images(docker_client, id2)
 
 
-def test_image_in_use(docker_client, container_factory):
+def test_image_in_use(docker_client, container_factory, docker_rotate):
 
     # container factory creates an image when created.
     id1 = container_factory.image_id
 
     # create a container that uses that image
-    cid1 = container_factory.make_created()
+    container_factory.make_created()
 
     # create a new image with the same factory and the same tags, to make the old image untagged
     id2 = container_factory.image_factory.add(container_factory.IMAGE_TAG, "latest")
@@ -40,12 +40,7 @@ def test_image_in_use(docker_client, container_factory):
     for container in docker_client.containers(all=True):
         print json.dumps(container, indent=3)
 
-    main(['untagged-images'])
+    docker_rotate(['untagged-images'])
 
     # verify that the untagged image was not removed
     assert_images(docker_client, id1, id2)
-
-
-
-
-

@@ -24,6 +24,7 @@ from collections import defaultdict
 
 from docker.errors import APIError
 
+from dockerrotate.containers import all_containers
 from dockerrotate.filter import regex_positive_match, regex_negative_match
 
 
@@ -98,7 +99,7 @@ def clean_images(args):
     # should not need to inspect all images; only intermediate images should appear
     # when all is true; these should be deleted along with dependent images
     images = args.client.images(all=False)
-    containers = args.client.containers(all=True)
+    containers = all_containers(args)
 
     images_to_remove = determine_images_to_remove(images, containers, args)
 

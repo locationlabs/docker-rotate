@@ -10,13 +10,15 @@ here is smart enough not to try to delete images that are in use.)
 """
 from docker.errors import APIError
 
+from dockerrotate.containers import all_containers
+
 
 def _find_image_ids_in_use(containers):
     return set(container["ImageID"] for container in containers)
 
 
 def clean_untagged(args):
-    containers = args.client.containers(all=True)
+    containers = all_containers(args)
     untagged_images = args.client.images(filters=dict(dangling=True))
     image_ids_in_use = _find_image_ids_in_use(containers)
 

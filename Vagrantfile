@@ -1,4 +1,10 @@
 nodes = [
+  { :hostname => 'vagrant-test-docker15',
+    :ip => '172.16.218.2',
+    :box => 'bento/ubuntu-14.04',
+    :ram => 128,
+    :cpus => 1,
+    :docker_version => '1.5.0'},
   { :hostname => 'vagrant-test-docker19',
     :ip => '172.16.218.3',
     :box => 'bento/ubuntu-14.04',
