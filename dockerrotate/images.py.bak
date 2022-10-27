@@ -50,11 +50,8 @@ def determine_images_to_remove(images, containers, args):
             return (all(regex_negative_match(name_pattern, name) for name_pattern in args.name) and
                     all(regex_negative_match(tag_pattern, tag) for tag_pattern in args.tag))
 
-        if image["RepoTags"]:
-            name_tags = [(normalize_tag_name(name_tag), tag_value(name_tag))
+        name_tags = [(normalize_tag_name(name_tag), tag_value(name_tag))
                      for name_tag in image["RepoTags"]]
-        else:
-            name_tags = []
 
         return any(positive_check(name, tag) for name, tag in name_tags) and \
             all(negative_check(name, tag) for name, tag in name_tags)
@@ -77,10 +74,9 @@ def find_image_ids_to_keep(images, args):
     images_by_name = defaultdict(list)
     for image in images:
         # each RepoTag produces a name; these are usually the same but can be different.
-        if image["RepoTags"]:
-            image_names = set(normalize_tag_name(name_tag) for name_tag in image["RepoTags"])
-            for image_name in image_names:
-                images_by_name[image_name].append(image)
+        image_names = set(normalize_tag_name(name_tag) for name_tag in image["RepoTags"])
+        for image_name in image_names:
+            images_by_name[image_name].append(image)
 
     all_ids_to_keep = set()
     for image_name, images_with_name in list(images_by_name.items()):
@@ -107,36 +103,32 @@ def clean_images(args):
 
     images_to_remove = determine_images_to_remove(images, containers, args)
 
-    if not images_to_remove:
-        print("No images are removed.")
-    else:
-        for image in images_to_remove:
-            print(("Removing image ID: {}, Tags: {}".format(
-                image["Id"],
-                ", ".join(image["RepoTags"])
-            )))
+    for image in images_to_remove:
+        print("Removing image ID: {}, Tags: {}".format(
+            image["Id"],
+            ", ".join(image["RepoTags"])
+        ))
 
-            if args.dry_run:
-                continue
+        if args.dry_run:
+            continue
 
-            try:
-                # The simplest way to do this would be to delete by ID. However, then we
-                # encounter issues in the case where we have an image A that is tagged for
-                # removal, but that image is a parent image for image B. The desired behavior
-                # in that case is that all tags are removed for that image, but the image
-                # itself remains until B is removed.
-                #
-                # force=true is required here because the image we remove might be "latest".
+        try:
+            # The simplest way to do this would be to delete by ID. However, then we
+            # encounter issues in the case where we have an image A that is tagged for
+            # removal, but that image is a parent image for image B. The desired behavior
+            # in that case is that all tags are removed for that image, but the image
+            # itself remains until B is removed.
+            #
+            # force=true is required here because the image we remove might be "latest".
 
-                if image["RepoTags"]:
-                    for repo_tag in image["RepoTags"]:
-                        args.client.remove_image(repo_tag, force=True, noprune=False)
-                else:
-                    # If the image has no tags (unexpected), fall back to ID.
-                    args.client.remove_image(image["Id"], force=True, noprune=False)
-            except APIError as error:
-                print("unexpected: API error while trying to delete image. Error message is:")
-                print((error.message))
+            for repo_tag in image["RepoTags"]:
+                args.client.remove_image(repo_tag, force=True, noprune=False)
+            else:
+                # If the image has no tags (unexpected), fall back to ID.
+                args.client.remove_image(image["Id"], force=True, noprune=False)
+        except APIError as error:
+            print("unexpected: API error while trying to delete image. Error message is:")
+            print(error.message)
 
 
 def normalize_tag_name(name_tag):

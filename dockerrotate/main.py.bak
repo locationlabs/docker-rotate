@@ -8,6 +8,7 @@ import re
 from dateutil.tz import tzutc
 from docker import Client
 from docker.errors import NotFound
+from docker.utils import kwargs_from_env
 
 from dockerrotate.containers import clean_containers
 from dockerrotate.images import clean_images
@@ -28,7 +29,7 @@ def time_delta_type(time_str):
         raise ArgumentTypeError("Invalid time delta format '{}'".format(time_str))
     parts = parts.groupdict()
     time_params = {}
-    for (name, param) in parts.items():
+    for (name, param) in parts.iteritems():
         if param:
             time_params[name] = int(param)
     return timedelta(**time_params)
@@ -127,10 +128,12 @@ def make_client(args):
     variables (e.g. DOCKER_HOST). This is much simpler than trying to pass
     all the possible certificate options through argparse.
     """
+    kwargs = kwargs_from_env(assert_hostname=False)
+
     if args.client_version:
-        client = Client(base_url=UNIX_SOC_ARGS["base_url"],version=args.client_version)
-    else:
-        client = Client(base_url=UNIX_SOC_ARGS["base_url"])
+        kwargs["version"] = args.client_version
+
+    client = Client(**kwargs)
 
     # Verify client can talk to server.
     try:

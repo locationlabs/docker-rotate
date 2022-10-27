@@ -26,7 +26,7 @@ def clean_untagged(args):
         if image["Id"] in image_ids_in_use:
             continue
 
-        print("Removing untagged image with Id: {}".format(image["Id"]))
+        print "Removing untagged image with Id: {}".format(image["Id"])
 
         if args.dry_run:
             continue
@@ -34,5 +34,5 @@ def clean_untagged(args):
         try:
             args.client.remove_image(image["Id"], noprune=False)
         except APIError as error:
-            print("unexpected: API error while trying to delete untagged image. Error message is:")
-            print(error.message)
+            print "unexpected: API error while trying to delete untagged image. Error message is:"
+            print error.message

@@ -84,11 +84,11 @@ def clean_containers(args):
     """
 
     for container in determine_containers_to_remove(args):
-        print(("Removing container ID: {}, Name: {}, Image: {}".format(
+        print("Removing container ID: {}, Name: {}, Image: {}".format(
             container["Id"],
             (container.get("Names") or ["N/A"])[0],
             container["Image"],
-        )))
+        ))
 
         if args.dry_run:
             continue
@@ -96,7 +96,7 @@ def clean_containers(args):
         try:
             args.client.remove_container(container["Id"])
         except APIError as error:
-            print(("Unable to remove container: {}: {}".format(
+            print("Unable to remove container: {}: {}".format(
                 container["Id"],
                 error,
-            )))
+            ))
